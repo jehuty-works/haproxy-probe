@@ -21,8 +21,6 @@ outputImage:
   tag: "0.1"
   pullPolicy: Always
 
-env:
-  POLL_TIME: "10"
 
 imagePullSecrets: []
 nameOverride: ""
