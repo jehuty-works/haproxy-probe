@@ -1,0 +1,24 @@
+kind: "BuildConfig"
+apiVersion: "build.openshift.io/v1"
+metadata:
+  name: "{{ .Values.appName }}-builder"
+  namespace: "{{ .Values.buildNamespace }}"
+spec:
+  triggers: {}
+  nodeSelector: {}
+  source:
+    type: Binary
+  output:
+    to:
+      kind: ImageStreamTag
+      name: "{{ .Values.appName }}:{{ .Values.outputImage.tag }}"
+  strategy:
+    type: Docker
+    dockerStrategy:
+      noCache: false
+#      dockerfilePath: /dockerfiles/redis-probe/src
+      from:
+        kind: ImageStreamTag
+        name: "{{ .Values.appName }}:{{ .Values.outputImage.tag }}"
+        #name: "{{ .Values.inputImage.name }}:{{ .Values.inputImage.tag }}"
+        #name: "{{ .Values.inputImage.registry }}/{{ .Values.inputImage.repository }}/{{ .Values.inputImage.name }}:{{ .Values.inputImage.tag }}"

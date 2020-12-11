@@ -1,0 +1,25 @@
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: "{{ .Values.appName }}"
+  namespace: "{{ .Values.namespace }}"  
+  labels:
+    app: "{{ .Values.appName }}"
+  annotations:
+    openshift.io/display-name: "{{ .Values.appName }}"
+spec:
+  tags:
+  - name: latest
+    annotations:
+      openshift.io/display-name: "{{ .Values.appName }}:latest"
+    from:
+      kind: ImageStreamTag
+      name: "{{ .Values.outputImage.tag }}"
+  - name: "{{ .Values.outputImage.tag }}" # output image tag
+    annotations:
+      openshift.io/display-name: "{{ .Values.appName }}:{{ .Values.outputImage.tag }}"
+    from: # base image referenced here
+      kind: DockerImage
+      name: "{{ .Values.outputImage.registry }}/{{ .Values.outputImage.repository }}/{{ .Values.outputImage.name }}:{{ .Values.outputImage.tag }}" #e.g. registry.access.redhat.com/rhel7:7.8-394
+    importPolicy:
+      insecure: true

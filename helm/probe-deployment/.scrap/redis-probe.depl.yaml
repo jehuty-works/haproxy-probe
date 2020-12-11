@@ -1,0 +1,87 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: "{{ .Values.appName }}-probe"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: "{{ .Values.appName }}"
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: "{{ .Values.appName }}"
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: "{{ .Values.appName }}"
+    spec:
+      containers:
+      - name: "{{ .Values.appName }}"
+        env:
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: RUNFOREVER
+          value: "1"
+        - name: DB_HOSTNAME
+          valueFrom:
+            secretKeyRef:
+              name: database-connection-args
+              key: DB_HOSTNAME
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: database-connection-args
+              key: DB_PORT
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: database-connection-args
+              key: DB_PASSWORD
+        image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+        imagePullPolicy: "{{ .Values.image.pullPolicy }}"
+        args:
+          - "/bin/env"
+          - "python{{ .Values.python.version }}"
+          - "/app/haproxy-probe.py"
+        ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 200m
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        # volumeMounts:
+        # - name: "{{ .Values.appName }}"-inventory
+        #   mountPath: /tmp/data
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      # volumes:
+      # - name: "{{ .Values.appName }}-inventory"
+      #   configMap:
+      #     defaultMode: 420
+      #     name: curl-targets
+      #     items:
+      #     - key: inventory.csv
+      #       path: inventory.csv

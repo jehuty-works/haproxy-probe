@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "curl-targets"
+  namespace: "{{ .Values.namespace }}"
+  labels:
+    app: "{{ .Values.appName }}"
+data:
+  openshift-api-server: "https://api.sample-server.com"
+  inventory.csv: |
+    {{ .Files.Get "inventory.csv" | indent 4 }}

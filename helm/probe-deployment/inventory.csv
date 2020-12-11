@@ -1,0 +1,2 @@
+URL,SRC_ZONE,F5_POLICY,HAPROXY_POLICY,DESCRIPTION
+https://api.sample-cluster.com,internal,none,passthrough,openshift api server with default endpoint
